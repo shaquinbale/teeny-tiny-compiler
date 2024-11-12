@@ -1,4 +1,6 @@
 class Lexer
+  attr_reader :current_char
+
   def initialize(source)
     @source = source + "\n" # Source code to lex as a string. Aooebd a bewkube ti sunokuft kexubg/parsing the last token/statement
     @current_char = '' # Current character in the string
