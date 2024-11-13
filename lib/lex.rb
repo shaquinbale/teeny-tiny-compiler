@@ -116,6 +116,26 @@ class Lexer
 
       tok_text = @source[start_position...@current_pos]
       token = Token.new(tok_text, :STRING)
+    when '0'..'9'
+      start_position = @current_pos
+
+      while peek =~ /[0-9]/
+        next_char
+      end
+      if peek == '.'
+        next_char
+
+        if peek !~ /[0-9]/
+          puts "Illegal character in number"
+          exit(1)
+        end
+        while peek =~ /[0-9]/
+          next_char
+        end
+      end
+
+      tok_number = @source[start_position..@current_pos] # This might be buggy later, idk if i did it right
+      token = Token.new(tok_number, :NUMBER)
     else
       # Unknown Token
       puts "Unknown token #{@current_char}"
