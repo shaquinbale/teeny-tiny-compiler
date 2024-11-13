@@ -1,3 +1,5 @@
+require 'set'
+
 class Lexer
   attr_reader :current_char
 
@@ -116,7 +118,7 @@ class Lexer
 
       tok_text = @source[start_position...@current_pos]
       token = Token.new(tok_text, :STRING)
-    when '0'..'9'
+    when /[0-9]/
       start_position = @current_pos
 
       while peek =~ /[0-9]/
@@ -136,6 +138,14 @@ class Lexer
 
       tok_number = @source[start_position..@current_pos] # This might be buggy later, idk if i did it right
       token = Token.new(tok_number, :NUMBER)
+    when /[a-zA-z]/
+      start_position = @current_pos
+      while peek =~ /[a-zA-z0-9]/
+        next_char
+      end
+
+      tok_text = @source[start_position..@current_pos]
+      token = TokenType.keyword?(tok_text) ? Token.new(tok_text, tok_text.to_sym) : Token.new(tok_text, :IDENT)
     else
       # Unknown Token
       puts "Unknown token #{@current_char}"
@@ -187,4 +197,10 @@ module TokenType
   LTEQ = :LTEQ
   GT = :GT
   GTEQ = :GTEQ
+
+  KEYWORDS = Set.new([LABEL, GOTO, PRINT, INPUT, LET, IF, THEN, ENDIF, WHILE, REPEAT, ENDWHILE])
+
+  def self.keyword?(token_type)
+    KEYWORDS.include?(token_type.to_sym)
+  end
 end

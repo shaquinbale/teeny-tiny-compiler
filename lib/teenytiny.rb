@@ -1,7 +1,7 @@
 require_relative 'lex'
 
 def main
-  source = "+-123 9.8654*/"
+  source = "IF+-123 foo*THEN/"
   lexer = Lexer.new(source)
 
   token = lexer.get_token
