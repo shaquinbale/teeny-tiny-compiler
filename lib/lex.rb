@@ -49,19 +49,20 @@ class Lexer
     skip_whitespace
     token = nil
   
-    if @current_char == '+'
+    case @current_char
+    when '+'
       token = Token.new(@current_char, TokenType::PLUS)
-    elsif @current_char == '-'
+    when '-'
       token = Token.new(@current_char, TokenType::MINUS)
-    elsif @current_char == '*'
+    when '*'
       token = Token.new(@current_char, TokenType::ASTERISK)
-    elsif @current_char == '/'
+    when '/'
       token = Token.new(@current_char, TokenType::SLASH)
-    elsif @current_char == "\n"
+    when "\n"
       token = Token.new(@current_char, TokenType::NEWLINE)
-    elsif @current_char == "\0"
+    when "\0"
       token = Token.new(@current_char, TokenType::EOF)
-    elsif @current_char == '='
+    when '='
       # Check whether token is = or ==
       if self.peek == '='
         last_char = @current_char
@@ -70,7 +71,7 @@ class Lexer
       else
         token = Token.new(@current_char, TokenType::EQ)
       end
-    elsif @current_char == '<'
+    when '<'
       # Check whether token is < or <=
       if self.peek == '='
         last_char = current_char
@@ -79,7 +80,7 @@ class Lexer
       else
         token = Token.new(last_char + @current_char, TokenType::LT)
       end
-    elsif @current_char == '>'
+    when '>'
       # Check whether token is > or >=
       if self.peek == '='
         last_char = current_char
@@ -88,7 +89,7 @@ class Lexer
       else
         token = Token.new(last_char + @current_char, TokenType::GT)
       end
-    elsif @current_char == '!'
+    when '!'
       if self.peek == '='
         last_char = current_char
         @current_char = self.next_char
