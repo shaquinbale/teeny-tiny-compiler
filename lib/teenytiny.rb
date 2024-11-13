@@ -1,7 +1,7 @@
 require_relative 'lex'
 
 def main
-  source = "+- # This is a comment!\n */"
+  source = "+- \"This is a string\" # This is a comment!\n */"
   lexer = Lexer.new(source)
 
   token = lexer.get_token

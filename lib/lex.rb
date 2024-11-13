@@ -2,7 +2,7 @@ class Lexer
   attr_reader :current_char
 
   def initialize(source)
-    @source = source + "\n" # Source code to lex as a string. Aooebd a bewkube ti sunokuft kexubg/parsing the last token/statement
+    @source = source + "\n" # Source code to lex as a string. Adds a newline to simplify lexing/parsing the last token/statement
     @current_char = '' # Current character in the string
     @current_pos = -1 # Current position in the string
     self.next_char
@@ -103,6 +103,19 @@ class Lexer
         puts "Expected '!+', got  !#{@current_char}"
         exit(1)
       end
+    when '"'
+      next_char
+      start_position = @current_pos
+
+      while @current_char != '"'
+        if ["\r", "\n", "\t", "\\", "%"].include?(@current_char)
+          puts "Illegal character: #{current_char}"
+        end
+        next_char
+      end
+
+      tok_text = @source[start_position...@current_pos]
+      token = Token.new(tok_text, :STRING)
     else
       # Unknown Token
       puts "Unknown token #{@current_char}"
@@ -114,7 +127,7 @@ class Lexer
 end
 
 class Token
-  attr_accessor :kind
+  attr_accessor :text, :kind
 
   def initialize(token_text, token_kind)
     @text = token_text
