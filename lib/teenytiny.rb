@@ -1,7 +1,7 @@
 require_relative 'lex'
 
 def main
-  source = "+- */"
+  source = "+- */ >>= = !="
   lexer = Lexer.new(source)
 
   token = lexer.get_token

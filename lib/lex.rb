@@ -67,7 +67,7 @@ class Lexer
       if self.peek == '='
         last_char = @current_char
         @current_char = self.next_char
-        token = Token.new(last_char + @current_char, TokenType::EQEQ)
+        token = Token.new((last_char + @current_char), TokenType::EQEQ)
       else
         token = Token.new(@current_char, TokenType::EQ)
       end
@@ -76,31 +76,30 @@ class Lexer
       if self.peek == '='
         last_char = current_char
         @current_char = self.next_char
-        token = Token.new(last_char + @current_char, TokenType::LTEQ)
+        token = Token.new((last_char + @current_char), TokenType::LTEQ)
       else
-        token = Token.new(last_char + @current_char, TokenType::LT)
+        token = Token.new(@current_char, TokenType::LT)
       end
     when '>'
       # Check whether token is > or >=
       if self.peek == '='
         last_char = current_char
         @current_char = self.next_char
-        token = Token.new(last_char + @current_char, TokenType::GTEQ)
+        token = Token.new((last_char + @current_char), TokenType::GTEQ)
       else
-        token = Token.new(last_char + @current_char, TokenType::GT)
+        token = Token.new(@current_char, TokenType::GT)
       end
     when '!'
       if self.peek == '='
         last_char = current_char
         @current_char = self.next_char
-        token = Token.new(last_char + @current_char, TokenType::NOTEQ)
+        token = Token.new((last_char + @current_char), TokenType::NOTEQ)
       else
         puts "Expected '!+', got  !#{@current_char}"
         exit(1)
       end
     else
-      # Unknown Token!
-      # abort("Unknown token: #{@current_char}")
+      # Unknown Token
       puts "Unknown token #{@current_char}"
       exit(1)
     end
