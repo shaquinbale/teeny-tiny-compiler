@@ -31,7 +31,8 @@ class Lexer
 
   # Invalid token found, print error message and exit
   def abort(message)
-    
+    puts message
+    exit(1)
   end
 
   # Skip whitespace, except for newlines, which indicate the end of the statement
@@ -102,8 +103,7 @@ class Lexer
         @current_char = next_char
         token = Token.new((last_char + @current_char), :NOTEQ)
       else
-        puts "Expected '!+', got  !#{@current_char}"
-        exit(1)
+        abort("Expected '!+', got  !#{@current_char}")
       end
     when '"'
       next_char
@@ -111,7 +111,7 @@ class Lexer
 
       while @current_char != '"'
         if ["\r", "\n", "\t", "\\", "%"].include?(@current_char)
-          puts "Illegal character: #{current_char}"
+          abort("Illegal character: #{current_char}")
         end
         next_char
       end
@@ -128,8 +128,7 @@ class Lexer
         next_char
 
         if peek !~ /[0-9]/
-          puts "Illegal character in number"
-          exit(1)
+          abort("Illegal character in number")
         end
         while peek =~ /[0-9]/
           next_char
@@ -148,8 +147,7 @@ class Lexer
       token = TokenType.keyword?(tok_text) ? Token.new(tok_text, tok_text.to_sym) : Token.new(tok_text, :IDENT)
     else
       # Unknown Token
-      puts "Unknown token #{@current_char}"
-      exit(1)
+      abort("Unknown token #{@current_char}")
     end
     next_char
     token
