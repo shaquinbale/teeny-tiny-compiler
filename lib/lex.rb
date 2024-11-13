@@ -41,12 +41,17 @@ class Lexer
 
   # Skip comments in code
   def skip_comments
-    
+    if @current_char == '#'
+      while @current_char != "\n"
+        next_char
+      end
+    end
   end
 
   # Return next token
   def get_token
     skip_whitespace
+    skip_comments
     token = nil
   
     case @current_char
