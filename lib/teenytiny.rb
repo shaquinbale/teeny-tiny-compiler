@@ -5,7 +5,7 @@ def main
   lexer = Lexer.new(source)
 
   token = lexer.get_token
-  while token.kind != TokenType::EOF
+  while token.kind != :EOF
     p token.kind
     token = lexer.get_token
   end

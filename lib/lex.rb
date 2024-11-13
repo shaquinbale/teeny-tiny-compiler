@@ -56,49 +56,49 @@ class Lexer
   
     case @current_char
     when '+'
-      token = Token.new(@current_char, TokenType::PLUS)
+      token = Token.new(@current_char, :PLUS)
     when '-'
-      token = Token.new(@current_char, TokenType::MINUS)
+      token = Token.new(@current_char, :MINUS)
     when '*'
-      token = Token.new(@current_char, TokenType::ASTERISK)
+      token = Token.new(@current_char, :ASTERISK)
     when '/'
-      token = Token.new(@current_char, TokenType::SLASH)
+      token = Token.new(@current_char, :SLASH)
     when "\n"
-      token = Token.new(@current_char, TokenType::NEWLINE)
+      token = Token.new(@current_char, :NEWLINE)
     when "\0"
-      token = Token.new(@current_char, TokenType::EOF)
+      token = Token.new(@current_char, :EOF)
     when '='
       # Check whether token is = or ==
-      if self.peek == '='
+      if peek == '='
         last_char = @current_char
-        @current_char = self.next_char
-        token = Token.new((last_char + @current_char), TokenType::EQEQ)
+        @current_char = next_char
+        token = Token.new((last_char + @current_char), :EQEQ)
       else
-        token = Token.new(@current_char, TokenType::EQ)
+        token = Token.new(@current_char, :EQ)
       end
     when '<'
       # Check whether token is < or <=
-      if self.peek == '='
+      if peek == '='
         last_char = current_char
-        @current_char = self.next_char
-        token = Token.new((last_char + @current_char), TokenType::LTEQ)
+        @current_char = next_char
+        token = Token.new((last_char + @current_char), :LTEQ)
       else
-        token = Token.new(@current_char, TokenType::LT)
+        token = Token.new(@current_char, :LT)
       end
     when '>'
       # Check whether token is > or >=
-      if self.peek == '='
+      if peek == '='
         last_char = current_char
-        @current_char = self.next_char
-        token = Token.new((last_char + @current_char), TokenType::GTEQ)
+        @current_char = next_char
+        token = Token.new((last_char + @current_char), :GTEQ)
       else
-        token = Token.new(@current_char, TokenType::GT)
+        token = Token.new(@current_char, :GT)
       end
     when '!'
-      if self.peek == '='
+      if peek == '='
         last_char = current_char
-        @current_char = self.next_char
-        token = Token.new((last_char + @current_char), TokenType::NOTEQ)
+        @current_char = next_char
+        token = Token.new((last_char + @current_char), :NOTEQ)
       else
         puts "Expected '!+', got  !#{@current_char}"
         exit(1)
@@ -108,7 +108,7 @@ class Lexer
       puts "Unknown token #{@current_char}"
       exit(1)
     end
-    self.next_char
+    next_char
     token
   end
 end
@@ -123,35 +123,35 @@ class Token
 end
 
 module TokenType
-  EOF = -1
-  NEWLINE = 0
-  NUMBER = 1
-  IDENT = 2
-  STRING = 3
+  EOF = :EOF
+  NEWLINE = :NEWLINE
+  NUMBER = :NUMBER
+  IDENT = :IDENT
+  STRING = :STRING
 
-  # Keywords.
-  LABEL = 101
-  GOTO = 102
-  PRINT = 103
-  INPUT = 104
-  LET = 105
-  IF = 106
-  THEN = 107
-  ENDIF = 108
-  WHILE = 109
-  REPEAT = 110
-  ENDWHILE = 111
+  # Keywords
+  LABEL = :LABEL
+  GOTO = :GOTO
+  PRINT = :PRINT
+  INPUT = :INPUT
+  LET = :LET
+  IF = :IF
+  THEN = :THEN
+  ENDIF = :ENDIF
+  WHILE = :WHILE
+  REPEAT = :REPEAT
+  ENDWHILE = :ENDWHILE
 
-  # Operators.
-  EQ = 201
-  PLUS = 202
-  MINUS = 203
-  ASTERISK = 204
-  SLASH = 205
-  EQEQ = 206
-  NOTEQ = 207
-  LT = 208
-  LTEQ = 209
-  GT = 210
-  GTEQ = 211
+  # Operators
+  EQ = :EQ
+  PLUS = :PLUS
+  MINUS = :MINUS
+  ASTERISK = :ASTERISK
+  SLASH = :SLASH
+  EQEQ = :EQEQ
+  NOTEQ = :NOTEQ
+  LT = :LT
+  LTEQ = :LTEQ
+  GT = :GT
+  GTEQ = :GTEQ
 end
