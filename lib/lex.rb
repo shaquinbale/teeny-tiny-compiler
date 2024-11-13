@@ -34,7 +34,9 @@ class Lexer
 
   # Skip whitespace, except for newlines, which indicate the end of the statement
   def skip_whitespace
-    
+    while @current_char == ' ' || @current_char == "\t" || @current_char == "\r"
+      self.next_char
+    end
   end
 
   # Skip comments in code
@@ -44,8 +46,9 @@ class Lexer
 
   # Return next token
   def get_token
+    skip_whitespace
     token = nil
-
+  
     if @current_char == '+'
       token = Token.new(@current_char, TokenType::PLUS)
     elsif @current_char == '-'
@@ -58,17 +61,59 @@ class Lexer
       token = Token.new(@current_char, TokenType::NEWLINE)
     elsif @current_char == "\0"
       token = Token.new(@current_char, TokenType::EOF)
+    elsif @current_char == '='
+      # Check whether token is = or ==
+      if self.peek == '='
+        last_char = @current_char
+        @current_char = self.next_char
+        token = Token.new(last_char + @current_char, TokenType::EQEQ)
+      else
+        token = Token.new(@current_char, TokenType::EQ)
+      end
+    elsif @current_char == '<'
+      # Check whether token is < or <=
+      if self.peek == '='
+        last_char = current_char
+        @current_char = self.next_char
+        token = Token.new(last_char + @current_char, TokenType::LTEQ)
+      else
+        token = Token.new(last_char + @current_char, TokenType::LT)
+      end
+    elsif @current_char == '>'
+      # Check whether token is > or >=
+      if self.peek == '='
+        last_char = current_char
+        @current_char = self.next_char
+        token = Token.new(last_char + @current_char, TokenType::GTEQ)
+      else
+        token = Token.new(last_char + @current_char, TokenType::GT)
+      end
+    elsif @current_char == '!'
+      if self.peek == '='
+        last_char = current_char
+        @current_char = self.next_char
+        token = Token.new(last_char + @current_char, TokenType::NOTEQ)
+      else
+        puts "Expected '!+', got  !#{@current_char}"
+        exit(1)
+      end
     else
-      # Unkown Token!
+      # Unknown Token!
+      # abort("Unknown token: #{@current_char}")
+      puts "Unknown token #{@current_char}"
+      exit(1)
     end
     self.next_char
+    token
   end
 end
 
 class Token
+  attr_accessor :kind
+
   def initialize(token_text, token_kind)
     @text = token_text
-    @king = token_kind
+    @kind = token_kind
   end
 end
 

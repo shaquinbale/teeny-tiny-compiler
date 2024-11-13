@@ -1,12 +1,13 @@
 require_relative 'lex'
 
 def main
-  source = "LET foobar = 123"
+  source = "+- */"
   lexer = Lexer.new(source)
 
-  while lexer.peek != "\0"
-    puts lexer.current_char
-    lexer.next_char
+  token = lexer.get_token
+  while token.kind != TokenType::EOF
+    p token.kind
+    token = lexer.get_token
   end
 end
 
