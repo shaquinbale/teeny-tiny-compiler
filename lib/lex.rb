@@ -29,12 +29,6 @@ class Lexer
     end
   end
 
-  # Invalid token found, print error message and exit
-  def abort(message)
-    puts message
-    exit(1)
-  end
-
   # Skip whitespace, except for newlines, which indicate the end of the statement
   def skip_whitespace
     while @current_char == ' ' || @current_char == "\t" || @current_char == "\r"

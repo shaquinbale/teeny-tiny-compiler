@@ -1,14 +1,20 @@
 require_relative 'lex'
+require_relative 'parser'
 
 def main
-  source = "IF+-123 foo*THEN/"
-  lexer = Lexer.new(source)
+  puts "Teeny Tiny Compiler"
 
-  token = lexer.get_token
-  while token.kind != :EOF
-    p token.kind
-    token = lexer.get_token
+  if ARGV.length != 1
+    abort("Error: Compiler needs a source file as an argument")
   end
+
+  source = File.read(ARGV[0], 'r')
+
+  lexer = Lexer.new
+  parser = Parser.new
+
+  parser.program
+  puts "Parsing complete."
 end
 
 main
