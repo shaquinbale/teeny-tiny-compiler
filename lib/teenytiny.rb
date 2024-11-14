@@ -10,8 +10,8 @@ def main
 
   source = File.read(ARGV[0], 'r')
 
-  lexer = Lexer.new
-  parser = Parser.new
+  lexer = Lexer.new(source)
+  parser = Parser.new(lexer)
 
   parser.program
   puts "Parsing complete."
