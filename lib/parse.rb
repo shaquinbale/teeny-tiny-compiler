@@ -61,6 +61,59 @@ class Parse
         # Expect an expression
         expression
       end
+    # "IF" comparison "THEN" nl {statement} "ENDIF" nl
+    elsif check_token(:IF)
+      puts "STATEMENT-IF"
+      next_token
+      comparison
+
+      match(:THEN)
+      nl
+
+      until check_token(:ENDIF)
+        statement
+      end
+
+      match(:ENDIF)
+    # "WHILE" comparison "REPEAT" nl {statement nl} "ENDWHILE" nl
+    elsif check_token(:WHILE)
+      puts "STATEMENT-WHILE"
+      next_token
+      comparison
+
+      match(:REPEAT)
+      nl
+
+      until check_token(:ENDWHILE)
+        statement
+      end
+
+      match(:ENDWHILE)
+    # "LABEL" ident
+    elsif check_token(:LABEL)
+      puts "STATEMENT-LABEL"
+      next_token
+      match(:IDENT)
+    # "GOTO" ident
+    elsif check_token(:GOTO)
+      puts "STATEMENT-GOTO"
+      next_token
+      match(:IDENT)
+    # "LET" ident "=" expression
+    elsif check_token(:LET)
+      puts "STATEMENT-LET"
+      next_token
+      match(:IDENT)
+      match(:EQ)
+      expression
+    # "INPUT" ident
+    elsif check_token(:INPUT)
+      puts "STATEMENT-INPUT"
+      next_token
+      match(:IDENT)
+    # Invalid statement, throw an error
+    else
+      abort("Invalid statement at #{@current_token}(#{@current_token.text})")
     end
 
     nl
