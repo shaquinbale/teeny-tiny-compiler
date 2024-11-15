@@ -42,7 +42,37 @@ class Parse
     puts "PROGRAM"
 
     until check_token(:EOF)
-      
+      statement
+    end
+  end
+
+  def statement
+    # Check the first token to see what kind of statement this is
+ 
+    # "PRINT" (expression | string)
+    if check_token(:PRINT)
+      puts "STATEMENT-PRINT"
+      next_token
+
+      if check_token(:STRING)
+        # Simple string
+        next_token
+      else
+        # Expect an expression
+        expression
+      end
+    end
+
+    nl
+  end
+
+  # nl ::= '\n'+
+  def nl
+    puts ("NEWLINE")
+
+    match(:NEWLINE)
+    while check_token(:NEWLINE)
+      next_token
     end
   end
 end

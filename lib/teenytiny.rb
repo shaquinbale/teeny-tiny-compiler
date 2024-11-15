@@ -1,5 +1,5 @@
 require_relative 'lex'
-require_relative 'parser'
+require_relative 'parse'
 
 def main
   puts "Teeny Tiny Compiler"
@@ -8,10 +8,10 @@ def main
     abort("Error: Compiler needs a source file as an argument")
   end
 
-  source = File.read(ARGV[0], 'r')
+  source = File.read(ARGV[0])
 
   lexer = Lexer.new(source)
-  parser = Parser.new(lexer)
+  parser = Parse.new(lexer)
 
   parser.program
   puts "Parsing complete."
