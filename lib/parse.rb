@@ -119,6 +119,74 @@ class Parse
     nl
   end
 
+  # comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+  def comparison
+    puts "COMPARISON"
+
+    expression
+    if comparison_operator?
+      next_token
+      expression
+    else
+      abort("Expected comparison operator at #{@current_token.text}")
+    end
+
+    while comparison_operator?
+      next_token
+      expression
+    end
+  end
+
+  # Return true if the current token is a comparison operator.
+  def comparison_operator?
+    check_token(:GT || :LT || :EQ || :GTEQ || :LTEQ || :EQEQ || :NOTEQ)
+  end
+
+  # expression ::= term {( "-" | "+" ) term}
+  def expression
+    puts "EXPRESSION"
+
+    term
+    while check_token(:PLUS) || check_token(:MINUS)
+      next_token
+      term
+    end
+  end
+
+  # term ::= unary {( "/" | "*" ) unary}
+  def term
+    puts "TERM"
+
+    unary
+    while check_token(:SLASH) || check_token(:ASTERISK)
+      next_token
+      unary
+    end
+  end
+
+  # unary ::= ["+" | "-"] primary
+  def unary
+    puts "UNARY"
+
+    if check_token(:PLUS) || check_token(:MINUS)
+      next_token
+    end
+    primary
+  end
+
+  # primary ::= number | ident
+  def primary
+    puts "PRIMARY #{@current_token.text}"
+
+    if check_token(:NUMBER)
+      next_token
+    elsif check_token(:IDENT)
+      next_token
+    else
+      abort("Unexpected token at #{@current_token.text}")
+    end
+  end
+
   # nl ::= '\n'+
   def nl
     puts ("NEWLINE")
