@@ -139,7 +139,7 @@ class Parse
 
   # Return true if the current token is a comparison operator.
   def comparison_operator?
-    check_token(:GT || :LT || :EQ || :GTEQ || :LTEQ || :EQEQ || :NOTEQ)
+    check_token(:GT) || check_token(:GTEQ) || check_token(:LT) || check_token(:LTEQ) || check_token(:EQ) || check_token(:EQEQ)
   end
 
   # expression ::= term {( "-" | "+" ) term}
