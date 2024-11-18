@@ -1,9 +1,14 @@
 require_relative 'lex'
+require 'set'
 
 # Parser object keeps track of current token and checks if the code matches the grammar.
 class Parse
   def initialize(lexer)
     @lexer = lexer
+
+    @symbols = Set.new
+    @labels_declared = Set.new
+    @labels_gotoed = Set.new
 
     @current_token = nil
     @peek_token = nil
@@ -41,8 +46,18 @@ class Parse
   def program
     puts "PROGRAM"
 
+    while check_token(:NEWLINE)
+      next_token
+    end
+
     until check_token(:EOF)
       statement
+    end
+
+    @labels_gotoed.each do |label|
+      unless @labels_declared.include?(label)
+        abort("Attempting to GOTO to undeclared label: #{label}")
+      end
     end
   end
 
@@ -61,6 +76,7 @@ class Parse
         # Expect an expression
         expression
       end
+
     # "IF" comparison "THEN" nl {statement} "ENDIF" nl
     elsif check_token(:IF)
       puts "STATEMENT-IF"
@@ -75,6 +91,7 @@ class Parse
       end
 
       match(:ENDIF)
+
     # "WHILE" comparison "REPEAT" nl {statement nl} "ENDWHILE" nl
     elsif check_token(:WHILE)
       puts "STATEMENT-WHILE"
@@ -89,28 +106,51 @@ class Parse
       end
 
       match(:ENDWHILE)
+
     # "LABEL" ident
     elsif check_token(:LABEL)
       puts "STATEMENT-LABEL"
       next_token
+
+      if @labels_declared.include?(@current_token)
+        abort("Label already declared: #{@current_token.text}")
+      end
+      @labels_declared.add(@current_token.text)
       match(:IDENT)
+
     # "GOTO" ident
     elsif check_token(:GOTO)
       puts "STATEMENT-GOTO"
       next_token
+      @labels_gotoed.add(@current_token.text)
       match(:IDENT)
+
     # "LET" ident "=" expression
     elsif check_token(:LET)
       puts "STATEMENT-LET"
       next_token
+
+      # Check if ident exists in the symbol table. If not, declare it
+      unless @symbols.include?(@current_token)
+        @symbols.add(@current_token.text)
+      end
+
       match(:IDENT)
       match(:EQ)
+
       expression
+
     # "INPUT" ident
     elsif check_token(:INPUT)
       puts "STATEMENT-INPUT"
       next_token
+
+      # If the variable doesnt exist, declare it
+      unless @symbols.include?(@current_token.text)
+        @symbols.add(@current_token.text)
+      end
       match(:IDENT)
+
     # Invalid statement, throw an error
     else
       abort("Invalid statement at #{@current_token}(#{@current_token.text})")
@@ -180,8 +220,14 @@ class Parse
 
     if check_token(:NUMBER)
       next_token
+
     elsif check_token(:IDENT)
+      # Ensure the variable already exists
+      unless @symbols.include?(@current_token.text)
+        abort("Referencing variable before assignment: #{@current_token.text}")
+      end
       next_token
+
     else
       abort("Unexpected token at #{@current_token.text}")
     end
