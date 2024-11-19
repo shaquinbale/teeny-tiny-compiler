@@ -1,5 +1,6 @@
 require_relative 'lex'
 require_relative 'parse'
+require_relative 'emit'
 
 def main
   puts "Teeny Tiny Compiler"
@@ -11,10 +12,12 @@ def main
   source = File.read(ARGV[0])
 
   lexer = Lexer.new(source)
+  emitter = Emitter.new("out.c")
   parser = Parse.new(lexer)
 
   parser.program
-  puts "Parsing complete."
+  emitter.write_file
+  puts "Compiling completed."
 end
 
 main
