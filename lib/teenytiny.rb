@@ -13,7 +13,7 @@ def main
 
   lexer = Lexer.new(source)
   emitter = Emitter.new("out.c")
-  parser = Parse.new(lexer)
+  parser = Parse.new(lexer, emitter)
 
   parser.program
   emitter.write_file

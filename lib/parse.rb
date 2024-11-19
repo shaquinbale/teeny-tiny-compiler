@@ -1,10 +1,12 @@
 require_relative 'lex'
+require_relative 'emit'
 require 'set'
 
 # Parser object keeps track of current token and checks if the code matches the grammar.
 class Parse
-  def initialize(lexer)
+  def initialize(lexer, emitter)
     @lexer = lexer
+    @emitter = emitter
 
     @symbols = Set.new
     @labels_declared = Set.new
@@ -44,15 +46,22 @@ class Parse
   
   # program ::= {statment}
   def program
-    puts "PROGRAM"
+    @emitter.header_line("#include <stdio.h>")
+    @emitter.header_line("int main(void){")
 
+    # Skip excess newlines in the grammar
     while check_token(:NEWLINE)
       next_token
     end
 
+    # Parse all statements in the program
     until check_token(:EOF)
       statement
     end
+
+    # Wrap things up
+    @emitter.emit_line("return 0;")
+    @emitter.emit_line("}")
 
     @labels_gotoed.each do |label|
       unless @labels_declared.include?(label)
@@ -66,89 +75,104 @@ class Parse
  
     # "PRINT" (expression | string)
     if check_token(:PRINT)
-      puts "STATEMENT-PRINT"
       next_token
 
       if check_token(:STRING)
         # Simple string
+        @emitter.emit_line("printf(\"#{@current_token.text}\\n\");")
         next_token
       else
         # Expect an expression
+        @emitter.emit("printf(\"%.2f\\n\", (float)(")
         expression
+        @emitter.emit_line("));")
       end
 
     # "IF" comparison "THEN" nl {statement} "ENDIF" nl
     elsif check_token(:IF)
-      puts "STATEMENT-IF"
       next_token
+      @emitter.emit("if(")
       comparison
 
       match(:THEN)
       nl
+      @emitter.emit_line("){")
 
       until check_token(:ENDIF)
         statement
       end
 
       match(:ENDIF)
+      @emitter.emit_line("}")
 
     # "WHILE" comparison "REPEAT" nl {statement nl} "ENDWHILE" nl
     elsif check_token(:WHILE)
-      puts "STATEMENT-WHILE"
       next_token
+      @emitter.emit("while(")
       comparison
 
       match(:REPEAT)
       nl
+      @emitter.emit_line("){")
 
       until check_token(:ENDWHILE)
         statement
       end
 
       match(:ENDWHILE)
+      @emitter.emit_line("}")
 
     # "LABEL" ident
     elsif check_token(:LABEL)
-      puts "STATEMENT-LABEL"
       next_token
 
       if @labels_declared.include?(@current_token)
         abort("Label already declared: #{@current_token.text}")
       end
       @labels_declared.add(@current_token.text)
+
+      @emitter.emit_line("#{@current_token.text}:")
       match(:IDENT)
 
     # "GOTO" ident
     elsif check_token(:GOTO)
-      puts "STATEMENT-GOTO"
       next_token
       @labels_gotoed.add(@current_token.text)
+      @emitter.emit_line("goto #{@current_token.text};")
       match(:IDENT)
 
     # "LET" ident "=" expression
     elsif check_token(:LET)
-      puts "STATEMENT-LET"
       next_token
 
       # Check if ident exists in the symbol table. If not, declare it
-      unless @symbols.include?(@current_token)
+      unless @symbols.include?(@current_token.text)
         @symbols.add(@current_token.text)
+        @emitter.header_line("float #{@current_token.text};")
       end
 
+      @emitter.emit("#{@current_token.text} = ")
       match(:IDENT)
       match(:EQ)
 
       expression
+      @emitter.emit_line(";")
 
     # "INPUT" ident
     elsif check_token(:INPUT)
-      puts "STATEMENT-INPUT"
       next_token
 
       # If the variable doesnt exist, declare it
       unless @symbols.include?(@current_token.text)
         @symbols.add(@current_token.text)
+        @emitter.header_line("float #{@current_token.text};")
       end
+
+      @emitter.emit_line("if(0 == scanf(\"%f\", &#{@current_token.text})) {")
+      @emitter.emit_line("#{@current_token.text} = 0;")
+      @emitter.emit("scanf(\"%")
+      @emitter.emit_line("*s\");")
+      @emitter.emit_line("}")
       match(:IDENT)
 
     # Invalid statement, throw an error
@@ -161,10 +185,10 @@ class Parse
 
   # comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
   def comparison
-    puts "COMPARISON"
-
     expression
+
     if comparison_operator?
+      @emitter.emit(@current_token.text)
       next_token
       expression
     else
@@ -172,6 +196,7 @@ class Parse
     end
 
     while comparison_operator?
+      @emitter.emit(@current_token.text)
       next_token
       expression
     end
@@ -184,10 +209,9 @@ class Parse
 
   # expression ::= term {( "-" | "+" ) term}
   def expression
-    puts "EXPRESSION"
-
     term
     while check_token(:PLUS) || check_token(:MINUS)
+      @emitter.emit(@current_token.text)
       next_token
       term
     end
@@ -195,10 +219,9 @@ class Parse
 
   # term ::= unary {( "/" | "*" ) unary}
   def term
-    puts "TERM"
-
     unary
     while check_token(:SLASH) || check_token(:ASTERISK)
+      @emitter.emit(@current_token.text)
       next_token
       unary
     end
@@ -206,9 +229,8 @@ class Parse
 
   # unary ::= ["+" | "-"] primary
   def unary
-    puts "UNARY"
-
     if check_token(:PLUS) || check_token(:MINUS)
+      @emitter.emit(@current_token.text)
       next_token
     end
     primary
@@ -216,9 +238,8 @@ class Parse
 
   # primary ::= number | ident
   def primary
-    puts "PRIMARY #{@current_token.text}"
-
     if check_token(:NUMBER)
+      @emitter.emit(@current_token.text)
       next_token
 
     elsif check_token(:IDENT)
@@ -226,6 +247,8 @@ class Parse
       unless @symbols.include?(@current_token.text)
         abort("Referencing variable before assignment: #{@current_token.text}")
       end
+
+      @emitter.emit(@current_token.text)
       next_token
 
     else
@@ -235,8 +258,6 @@ class Parse
 
   # nl ::= '\n'+
   def nl
-    puts ("NEWLINE")
-
     match(:NEWLINE)
     while check_token(:NEWLINE)
       next_token
